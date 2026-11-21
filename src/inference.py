@@ -5,14 +5,14 @@ from typing import Dict, List, Any
 def prever_perfil(dados_usuario: Dict[str, Any]) -> Dict[str, Any]:
     """
     Recebe os parâmetros do estudante e retorna as Top 5 ocupações (CBO),
-    faixa salarial estimada e recomendação de habilidades.
+    faixa salarial estimada, tendência da média móvel (3m) e recomendação de habilidades.
     """
     idade = dados_usuario.get("idade", 22)
     escolaridade = dados_usuario.get("escolaridade", "Superior Incompleto")
     municipio = dados_usuario.get("municipio", "Porto Alegre")
     modo_neutro = dados_usuario.get("modo_neutro", False)
 
-    fator_escolaridade = 1.35 if "Completo" in escolaridade else 1.0
+    fator_escolaridade = 1.35 if "Completo" in escolaridade or "Pós" in escolaridade else 1.0
     salario_base = round(2400 * fator_escolaridade + (idade - 18) * 45, 2)
 
     ocupacoes_mock = [
@@ -21,6 +21,7 @@ def prever_perfil(dados_usuario: Dict[str, Any]) -> Dict[str, Any]:
             "ocupacao": "Analista de Desenvolvimento de Sistemas / Dados",
             "probabilidade": 0.42,
             "salario_estimado": round(salario_base * 1.25, 2),
+            "tendencia_salario_pct": 6.4,
             "saldo_vagas_12m": 1420,
         },
         {
@@ -28,6 +29,7 @@ def prever_perfil(dados_usuario: Dict[str, Any]) -> Dict[str, Any]:
             "ocupacao": "Técnico de Desenvolvimento de Sistemas e Aplicações",
             "probabilidade": 0.26,
             "salario_estimado": round(salario_base * 0.95, 2),
+            "tendencia_salario_pct": 4.1,
             "saldo_vagas_12m": 890,
         },
         {
@@ -35,6 +37,7 @@ def prever_perfil(dados_usuario: Dict[str, Any]) -> Dict[str, Any]:
             "ocupacao": "Analista de Planejamento e Gestão",
             "probabilidade": 0.15,
             "salario_estimado": round(salario_base * 1.10, 2),
+            "tendencia_salario_pct": 2.8,
             "saldo_vagas_12m": 640,
         },
         {
@@ -42,6 +45,7 @@ def prever_perfil(dados_usuario: Dict[str, Any]) -> Dict[str, Any]:
             "ocupacao": "Assistente Administrativo / Operações",
             "probabilidade": 0.11,
             "salario_estimado": round(salario_base * 0.78, 2),
+            "tendencia_salario_pct": -1.2,
             "saldo_vagas_12m": 2150,
         },
         {
@@ -49,6 +53,7 @@ def prever_perfil(dados_usuario: Dict[str, Any]) -> Dict[str, Any]:
             "ocupacao": "Técnico em Operação e Monitoramento de Computadores",
             "probabilidade": 0.06,
             "salario_estimado": round(salario_base * 0.85, 2),
+            "tendencia_salario_pct": 1.9,
             "saldo_vagas_12m": 410,
         },
     ]

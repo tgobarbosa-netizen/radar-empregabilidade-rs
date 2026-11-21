@@ -21,6 +21,9 @@ tab1, tab2, tab3 = st.tabs([
     "📋 Sobre o Projeto & ODS 8",
 ])
 
+# ==========================================
+# ABA 1: INFERÊNCIA DE PERFIL DO ESTUDANTE
+# ==========================================
 with tab1:
     st.subheader("Simule suas probabilidades de absorção no mercado gaúcho")
     col_form, col_res = st.columns([1, 2], gap="large")
@@ -74,12 +77,31 @@ with tab1:
 
             st.success(f"Análise concluída para **{municipio}** ({escolaridade}).")
 
+            # Métricas de destaque da Top 1 com Tendência Salarial (Média Móvel 3m)
             top1 = df_top.iloc[0]
-            m1, m2, m3 = st.columns(3)
-            m1.metric("Ocupação Mais Provável", f"CBO {top1['cbo_codigo']}", f"{top1['probabilidade']*100:.0f}% de afinidade")
-            m2.metric("Salário Estimado de Entrada", f"R$ {top1['salario_estimado']:,.2f}")
-            m3.metric("Saldo de Vagas (12m)", f"+{top1['saldo_vagas_12m']} vagas")
+            tendencia = top1["tendencia_salario_pct"]
+            sinal = "+" if tendencia > 0 else ""
 
+            m1, m2, m3 = st.columns(3)
+            m1.metric(
+                label="Ocupação Mais Provável",
+                value=f"CBO {top1['cbo_codigo']}",
+                delta=f"{top1['probabilidade']*100:.0f}% de afinidade",
+                delta_color="off",
+            )
+            m2.metric(
+                label="Salário Estimado de Entrada",
+                value=f"R$ {top1['salario_estimado']:,.2f}",
+                delta=f"{sinal}{tendencia:.1f}% (média móvel 3m)",
+                help="Variação percentual do salário médio de admissão nos últimos 3 meses em relação ao trimestre anterior.",
+            )
+            m3.metric(
+                label="Saldo de Vagas (12m)",
+                value=f"+{top1['saldo_vagas_12m']} vagas",
+                delta="Expansão líquida",
+            )
+
+            # Gráfico de barras das Top 5 ocupações
             fig = px.bar(
                 df_top,
                 x="probabilidade",
@@ -91,10 +113,24 @@ with tab1:
             )
             fig.update_layout(yaxis=dict(autorange="reversed"), height=320)
             st.plotly_chart(fig, use_container_width=True)
+
+            # Bloco de Tradução Prática para a vida do estudante
+            maior_volume = df_top.sort_values(by="saldo_vagas_12m", ascending=False).iloc[0]
+            with st.expander("💡 O que esses números significam na prática para você?", expanded=True):
+                st.markdown(
+                    f"- **Alvo Principal:** Seu perfil tem maior afinidade técnica com **{top1['ocupacao']}** (CBO {top1['cbo_codigo']}).\n"
+                    f"- **Porta de Entrada Rápida:** Se precisar de absorção imediata em **{municipio}**, a ocupação correlata com maior volume de contratações abertas é **{maior_volume['ocupacao']}** (+{maior_volume['saldo_vagas_12m']} vagas no último ano).\n"
+                    f"- **Termômetro de Remuneração:** Use a faixa de **R$ {top1['salario_estimado']:,.2f}** como referência realista para pretensão salarial inicial na região."
+                )
+
+            # Trilha gerada por IA
             st.info(resultado["trilha_recomendada"])
         else:
             st.info("👈 Preencha seu perfil ao lado e clique em **Analisar Oportunidades** para rodar a inferência.")
 
+# ==========================================
+# ABA 2: ENGENHARIA REVERSA DE DEMANDA
+# ==========================================
 with tab2:
     st.subheader("Radar Reverso: Onde há maior escassez e absorção de profissionais?")
     st.caption(
@@ -136,6 +172,9 @@ with tab2:
         st.markdown("**Detalhamento dos Indicadores (12 meses)**")
         st.dataframe(df_radar, use_container_width=True, hide_index=True)
 
+# ==========================================
+# ABA 3: DOCUMENTAÇÃO E ODS 8
+# ==========================================
 with tab3:
     st.markdown("""
     ### Justificativa e Alinhamento com a ODS 8
