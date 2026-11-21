@@ -77,17 +77,29 @@ with tab1:
 
             st.success(f"Análise concluída para **{municipio}** ({escolaridade}).")
 
-            # Métricas de destaque da Top 1 com Tendência Salarial (Média Móvel 3m)
+            # Destaque da Ocupação Principal (Nome completo + Código CBO)
             top1 = df_top.iloc[0]
             tendencia = top1["tendencia_salario_pct"]
             sinal = "+" if tendencia > 0 else ""
 
+            st.markdown(
+                f"""
+                <div style="background-color: #1E2530; padding: 14px 18px; border-radius: 8px; border-left: 4px solid #00C896; margin-bottom: 14px;">
+                    <span style="font-size: 13px; color: #9BA3AF; text-transform: uppercase; letter-spacing: 0.5px;">Ocupação Mais Provável (CBO {top1['cbo_codigo']})</span><br>
+                    <span style="font-size: 20px; font-weight: 700; color: #FFFFFF;">{top1['ocupacao']}</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            # Métricas de destaque com Tendência Salarial (Média Móvel 3m)
             m1, m2, m3 = st.columns(3)
             m1.metric(
-                label="Ocupação Mais Provável",
-                value=f"CBO {top1['cbo_codigo']}",
-                delta=f"{top1['probabilidade']*100:.0f}% de afinidade",
+                label="Afinidade com o Perfil",
+                value=f"{top1['probabilidade']*100:.0f}%",
+                delta=f"CBO {top1['cbo_codigo']}",
                 delta_color="off",
+                help=f"Classificação Brasileira de Ocupações (Subgrupo {top1['cbo_codigo']}): {top1['ocupacao']}",
             )
             m2.metric(
                 label="Salário Estimado de Entrada",
