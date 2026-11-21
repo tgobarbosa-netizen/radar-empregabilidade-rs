@@ -1,0 +1,23 @@
+# Ambiente Virtual
+venv/
+.venv/
+env/
+
+# Cache Python e Jupyter
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Segredos e Chaves de API
+.env
+.streamlit/secrets.toml
+
+# Dados Brutos Pesados
+data/raw/
+*.csv
+*.zip
+*.7z
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
