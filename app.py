@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from src.inference import prever_perfil, buscar_demanda_reversa
+from src.inference import prever_perfil, buscar_demanda_reversa, buscar_serie_historica_rs
 
 st.set_page_config(
     page_title="Radar de Empregabilidade RS | ODS 8",
@@ -146,22 +146,45 @@ with tab1:
 with tab2:
     st.subheader("Radar Reverso: Onde há maior escassez e absorção de profissionais?")
     st.caption(
-        "O Índice de Aquecimento cruza o saldo líquido de admissões com a variação real do salário "
-        "de entrada nos últimos 12 meses para identificar polos regionais com alta demanda."
+        "Analise tanto o acumulado dos últimos 12 meses quanto a evolução trimestral e mensal "
+        "para identificar sazonalidade e aceleração de demanda no Rio Grande do Sul."
     )
 
-    area_radar = st.selectbox(
-        "Selecione a Área Profissional para rastrear demanda no RS:",
-        [
-            "Tecnologia e Dados",
-            "Administração e Negócios",
-            "Engenharia e Indústria",
-            "Saúde e Ciências Biológicas",
-            "Logística e Transporte",
-        ],
-    )
+    f1, f2, f3 = st.columns([2, 2, 2])
+    with f1:
+        area_radar = st.selectbox(
+            "Área Profissional (CBO):",
+            [
+                "Tecnologia e Dados",
+                "Administração e Negócios",
+                "Engenharia e Indústria",
+                "Saúde e Ciências Biológicas",
+                "Logística e Transporte",
+            ],
+        )
+    with f2:
+        granularidade = st.radio(
+            "Escala Temporal:",
+            ["Acumulado 12 Meses", "Por Trimestre", "Mensal"],
+            horizontal=True,
+        )
+    with f3:
+        if granularidade == "Acumulado 12 Meses":
+            periodo_selecionado = st.selectbox("Período de Referência:", ["Últimos 12 Meses"])
+        elif granularidade == "Por Trimestre":
+            periodo_selecionado = st.select_slider(
+                "Deslize o Trimestre:",
+                options=["2025-T4", "2026-T1", "2026-T2", "2026-T3"],
+                value="2026-T3",
+            )
+        else:
+            periodo_selecionado = st.select_slider(
+                "Deslize o Mês:",
+                options=["Ago/2026", "Set/2026", "Out/2026"],
+                value="Out/2026",
+            )
 
-    df_radar = pd.DataFrame(buscar_demanda_reversa(area_radar))
+    df_radar = pd.DataFrame(buscar_demanda_reversa(area_radar, granularidade, periodo_selecionado))
 
     # Mapa Geográfico Interativo do RS (Plotly MapLibre)
     fig_mapa = px.scatter_map(
@@ -183,14 +206,14 @@ with tab2:
         zoom=5.6,
         center={"lat": -30.2, "lon": -53.0},
         map_style="carto-darkmatter",
-        title=f"Mapa de Calor Ocupacional (RS) — {area_radar}",
+        title=f"Mapa de Calor Ocupacional (RS) — {area_radar} ({periodo_selecionado})",
         labels={
-            "saldo_liquido": "Saldo de Vagas (12m)",
+            "saldo_liquido": "Saldo de Vagas",
             "variacao_salarial_pct": "Alta Salarial (%)",
             "indice_aquecimento": "Índice de Aquecimento",
         },
     )
-    fig_mapa.update_layout(height=420, margin={"r": 0, "t": 40, "l": 0, "b": 0})
+    fig_mapa.update_layout(height=400, margin={"r": 0, "t": 40, "l": 0, "b": 0})
     st.plotly_chart(fig_mapa, use_container_width=True)
 
     c1, c2 = st.columns([3, 2])
@@ -201,7 +224,7 @@ with tab2:
             y="indice_aquecimento",
             color="variacao_salarial_pct",
             text="indice_aquecimento",
-            title=f"Ranking de Aquecimento Municipal — {area_radar}",
+            title=f"Ranking Municipal ({periodo_selecionado})",
             labels={
                 "municipio": "Município (RS)",
                 "indice_aquecimento": "Índice de Aquecimento (0-100)",
@@ -211,9 +234,37 @@ with tab2:
         st.plotly_chart(fig_radar, use_container_width=True)
 
     with c2:
-        st.markdown("**Detalhamento dos Indicadores (12 meses)**")
+        st.markdown(f"**Indicadores por Município ({periodo_selecionado})**")
         cols_exibir = ["municipio", "saldo_liquido", "variacao_salarial_pct", "indice_aquecimento"]
         st.dataframe(df_radar[cols_exibir], use_container_width=True, hide_index=True)
+
+    # Série Histórica Trimestral Consolidada
+    st.divider()
+    df_hist = pd.DataFrame(buscar_serie_historica_rs(area_radar))
+    h1, h2 = st.columns(2)
+    with h1:
+        fig_hist_vagas = px.area(
+            df_hist,
+            x="periodo",
+            y="saldo_vagas",
+            markers=True,
+            title=f"Evolução Trimestral do Saldo de Vagas (RS) — {area_radar}",
+            labels={"periodo": "Trimestre", "saldo_vagas": "Saldo Líquido de Admissões"},
+        )
+        fig_hist_vagas.update_layout(height=280)
+        st.plotly_chart(fig_hist_vagas, use_container_width=True)
+
+    with h2:
+        fig_hist_sal = px.line(
+            df_hist,
+            x="periodo",
+            y="salario_medio_admissao",
+            markers=True,
+            title=f"Evolução do Salário Médio de Admissão (R$) — {area_radar}",
+            labels={"periodo": "Trimestre", "salario_medio_admissao": "Salário Médio (R$)"},
+        )
+        fig_hist_sal.update_layout(height=280)
+        st.plotly_chart(fig_hist_sal, use_container_width=True)
 
 # ==========================================
 # ABA 3: DOCUMENTAÇÃO E ODS 8

@@ -72,12 +72,29 @@ def prever_perfil(dados_usuario: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def buscar_demanda_reversa(area_cbo: str, filtro_regiao: str = "Todo o RS") -> List[Dict[str, Any]]:
+def buscar_demanda_reversa(
+    area_cbo: str,
+    granularidade: str = "Acumulado 12 Meses",
+    periodo: str = "Últimos 12 Meses",
+) -> List[Dict[str, Any]]:
     """
-    Engenharia reversa: identifica os municípios do RS com maior Índice de Aquecimento
-    (saldo líquido de admissões + variação salarial positiva) e coordenadas geográficas.
+    Engenharia reversa com recorte temporal: identifica os municípios do RS com maior
+    Índice de Aquecimento no período selecionado (Acumulado 12m, Trimestral ou Mensal).
     """
-    return [
+    # Fatores simulados para demonstrar a variação temporal entre trimestres/meses no MVP
+    fatores_periodo = {
+        "Últimos 12 Meses": (1.00, 0.0),
+        "2025-T4": (0.28, -1.2),
+        "2026-T1": (0.22, -2.5),
+        "2026-T2": (0.24, 0.8),
+        "2026-T3": (0.26, 2.4),
+        "Ago/2026": (0.08, 1.5),
+        "Set/2026": (0.09, 2.1),
+        "Out/2026": (0.10, 3.0),
+    }
+    mult_vagas, ajuste_indice = fatores_periodo.get(periodo, (1.0, 0.0))
+
+    base_municipios = [
         {"municipio": "Porto Alegre", "lat": -30.0346, "lon": -51.2177, "saldo_liquido": 3450, "variacao_salarial_pct": 6.8, "indice_aquecimento": 94.2},
         {"municipio": "Caxias do Sul", "lat": -29.1678, "lon": -51.1794, "saldo_liquido": 1890, "variacao_salarial_pct": 7.4, "indice_aquecimento": 91.5},
         {"municipio": "Canoas", "lat": -29.9178, "lon": -51.1836, "saldo_liquido": 1120, "variacao_salarial_pct": 5.9, "indice_aquecimento": 86.0},
@@ -85,6 +102,27 @@ def buscar_demanda_reversa(area_cbo: str, filtro_regiao: str = "Todo o RS") -> L
         {"municipio": "Passo Fundo", "lat": -28.2628, "lon": -52.4067, "saldo_liquido": 740, "variacao_salarial_pct": 7.9, "indice_aquecimento": 82.1},
         {"municipio": "Pelotas", "lat": -31.7654, "lon": -52.3376, "saldo_liquido": 620, "variacao_salarial_pct": 5.2, "indice_aquecimento": 78.5},
         {"municipio": "Santa Maria", "lat": -29.6842, "lon": -53.8069, "saldo_liquido": 580, "variacao_salarial_pct": 5.5, "indice_aquecimento": 76.8},
+    ]
+
+    resultado = []
+    for item in base_municipios:
+        novo_item = item.copy()
+        novo_item["saldo_liquido"] = max(10, int(round(item["saldo_liquido"] * mult_vagas)))
+        novo_item["indice_aquecimento"] = round(min(99.9, max(40.0, item["indice_aquecimento"] + ajuste_indice)), 1)
+        resultado.append(novo_item)
+
+    return resultado
+
+
+def buscar_serie_historica_rs(area_cbo: str) -> List[Dict[str, Any]]:
+    """
+    Retorna a evolução trimestral consolidada do RS para o gráfico de série temporal.
+    """
+    return [
+        {"periodo": "2025-T4", "saldo_vagas": 2480, "salario_medio_admissao": 3120.0},
+        {"periodo": "2026-T1", "saldo_vagas": 1990, "salario_medio_admissao": 3190.0},
+        {"periodo": "2026-T2", "saldo_vagas": 2250, "salario_medio_admissao": 3280.0},
+        {"periodo": "2026-T3", "saldo_vagas": 2550, "salario_medio_admissao": 3410.0},
     ]
 
 
