@@ -75,15 +75,16 @@ def prever_perfil(dados_usuario: Dict[str, Any]) -> Dict[str, Any]:
 def buscar_demanda_reversa(area_cbo: str, filtro_regiao: str = "Todo o RS") -> List[Dict[str, Any]]:
     """
     Engenharia reversa: identifica os municípios do RS com maior Índice de Aquecimento
-    (saldo líquido de admissões + variação salarial positiva) para a área escolhida.
+    (saldo líquido de admissões + variação salarial positiva) e coordenadas geográficas.
     """
     return [
-        {"municipio": "Porto Alegre", "saldo_liquido": 3450, "variacao_salarial_pct": 6.8, "indice_aquecimento": 94.2},
-        {"municipio": "Caxias do Sul", "saldo_liquido": 1890, "variacao_salarial_pct": 7.4, "indice_aquecimento": 91.5},
-        {"municipio": "Canoas", "saldo_liquido": 1120, "variacao_salarial_pct": 5.9, "indice_aquecimento": 86.0},
-        {"municipio": "Novo Hamburgo", "saldo_liquido": 870, "variacao_salarial_pct": 6.1, "indice_aquecimento": 83.4},
-        {"municipio": "Passo Fundo", "saldo_liquido": 740, "variacao_salarial_pct": 7.9, "indice_aquecimento": 82.1},
-        {"municipio": "Pelotas", "saldo_liquido": 620, "variacao_salarial_pct": 5.2, "indice_aquecimento": 78.5},
+        {"municipio": "Porto Alegre", "lat": -30.0346, "lon": -51.2177, "saldo_liquido": 3450, "variacao_salarial_pct": 6.8, "indice_aquecimento": 94.2},
+        {"municipio": "Caxias do Sul", "lat": -29.1678, "lon": -51.1794, "saldo_liquido": 1890, "variacao_salarial_pct": 7.4, "indice_aquecimento": 91.5},
+        {"municipio": "Canoas", "lat": -29.9178, "lon": -51.1836, "saldo_liquido": 1120, "variacao_salarial_pct": 5.9, "indice_aquecimento": 86.0},
+        {"municipio": "Novo Hamburgo", "lat": -29.6875, "lon": -51.1328, "saldo_liquido": 870, "variacao_salarial_pct": 6.1, "indice_aquecimento": 83.4},
+        {"municipio": "Passo Fundo", "lat": -28.2628, "lon": -52.4067, "saldo_liquido": 740, "variacao_salarial_pct": 7.9, "indice_aquecimento": 82.1},
+        {"municipio": "Pelotas", "lat": -31.7654, "lon": -52.3376, "saldo_liquido": 620, "variacao_salarial_pct": 5.2, "indice_aquecimento": 78.5},
+        {"municipio": "Santa Maria", "lat": -29.6842, "lon": -53.8069, "saldo_liquido": 580, "variacao_salarial_pct": 5.5, "indice_aquecimento": 76.8},
     ]
 
 

@@ -147,7 +147,7 @@ with tab2:
     st.subheader("Radar Reverso: Onde há maior escassez e absorção de profissionais?")
     st.caption(
         "O Índice de Aquecimento cruza o saldo líquido de admissões com a variação real do salário "
-        "de entrada nos últimos 12 meses para identificar mercados com alta demanda."
+        "de entrada nos últimos 12 meses para identificar polos regionais com alta demanda."
     )
 
     area_radar = st.selectbox(
@@ -162,6 +162,36 @@ with tab2:
     )
 
     df_radar = pd.DataFrame(buscar_demanda_reversa(area_radar))
+
+    # Mapa Geográfico Interativo do RS
+    fig_mapa = px.scatter_mapbox(
+        df_radar,
+        lat="lat",
+        lon="lon",
+        size="saldo_liquido",
+        color="indice_aquecimento",
+        hover_name="municipio",
+        hover_data={
+            "lat": False,
+            "lon": False,
+            "saldo_liquido": True,
+            "variacao_salarial_pct": True,
+            "indice_aquecimento": True,
+        },
+        color_continuous_scale="Viridis",
+        size_max=32,
+        zoom=5.6,
+        center={"lat": -30.2, "lon": -53.0},
+        mapbox_style="carto-darkmatter",
+        title=f"Mapa de Calor Ocupacional (RS) — {area_radar}",
+        labels={
+            "saldo_liquido": "Saldo de Vagas (12m)",
+            "variacao_salarial_pct": "Alta Salarial (%)",
+            "indice_aquecimento": "Índice de Aquecimento",
+        },
+    )
+    fig_mapa.update_layout(height=420, margin={"r": 0, "t": 40, "l": 0, "b": 0})
+    st.plotly_chart(fig_mapa, use_container_width=True)
 
     c1, c2 = st.columns([3, 2])
     with c1:
@@ -182,7 +212,8 @@ with tab2:
 
     with c2:
         st.markdown("**Detalhamento dos Indicadores (12 meses)**")
-        st.dataframe(df_radar, use_container_width=True, hide_index=True)
+        cols_exibir = ["municipio", "saldo_liquido", "variacao_salarial_pct", "indice_aquecimento"]
+        st.dataframe(df_radar[cols_exibir], use_container_width=True, hide_index=True)
 
 # ==========================================
 # ABA 3: DOCUMENTAÇÃO E ODS 8
