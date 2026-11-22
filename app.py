@@ -163,8 +163,8 @@ with tab2:
 
     df_radar = pd.DataFrame(buscar_demanda_reversa(area_radar))
 
-    # Mapa Geográfico Interativo do RS
-    fig_mapa = px.scatter_mapbox(
+    # Mapa Geográfico Interativo do RS (Plotly MapLibre)
+    fig_mapa = px.scatter_map(
         df_radar,
         lat="lat",
         lon="lon",
@@ -182,7 +182,7 @@ with tab2:
         size_max=32,
         zoom=5.6,
         center={"lat": -30.2, "lon": -53.0},
-        mapbox_style="carto-darkmatter",
+        map_style="carto-darkmatter",
         title=f"Mapa de Calor Ocupacional (RS) — {area_radar}",
         labels={
             "saldo_liquido": "Saldo de Vagas (12m)",
